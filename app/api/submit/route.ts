@@ -1,34 +1,42 @@
-import { NextRequest, NextResponse } from "next/server";
-import { redis } from "@/lib/redis";
+// src/app/api/submit/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 
-export const dynamic = "force-dynamic";
+// Initialise le client Redis avec tes variables d'environnement
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await request.json();
     const { nom, email, telephone, message } = body;
 
+    // Validation simple
     if (!nom || !email || !message) {
-      return NextResponse.json(
-        { error: "Nom, email et message sont requis." },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Les champs Nom, Email et Message sont obligatoires." }, { status: 400 });
     }
 
-    const entry = {
-      id: Date.now().toString(),
+    // Crée un objet avec les données du formulaire
+    const formData = {
       nom,
       email,
-      telephone: telephone || "",
+      telephone: telephone || 'Non renseigné', // Met une valeur par défaut si le téléphone est vide
       message,
-      date: new Date().toISOString(),
+      date: new Date().toISOString(), // Ajoute la date et l'heure de la soumission
     };
 
-    await redis.lpush("formulaire:submissions", JSON.stringify(entry));
+    // Enregistre les données dans Redis
+    // On utilise un identifiant unique pour chaque soumission (ex: contact:1234567890)
+    await redis.set(`contact:${Date.now()}`, JSON.stringify(formData));
 
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+    console.log("Données enregistrées avec succès :", formData);
+
+    return NextResponse.json({ message: "Message reçu et enregistré avec succès !" });
+
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement dans Redis :", error);
+    return NextResponse.json({ message: "Erreur serveur lors de l'enregistrement." }, { status: 500 });
   }
 }
