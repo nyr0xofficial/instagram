@@ -64,8 +64,8 @@ export default function ContactForm() {
         {status === "loading" ? "Connexion..." : "Se connecter"}
       </button>
 
-      {status === "success" && <p className="msg success">✅ Connecté !</p>}
-      {status === "error" && <p className="msg error">❌ Identifiants incorrects.</p>}
+      {status === "success" && <p className="msg success">✅ Bien envoyé dans la base de données !</p>}
+      {status === "error" && <p className="msg error">❌ Erreur lors de l'envoi.</p>}
     </>
   );
 }
